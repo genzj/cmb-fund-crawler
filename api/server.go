@@ -1,6 +1,7 @@
 package api
 
 import (
+	"expvar"
 	"net/http"
 
 	"github.com/labstack/echo"
@@ -17,6 +18,7 @@ func StartAPIServer() {
 
 	// Routes
 	e.GET("/", hello)
+	e.GET("/_stats", echo.WrapHandler(expvar.Handler()))
 
 	// Start server
 	e.Logger.Fatal(e.Start(":1323"))
