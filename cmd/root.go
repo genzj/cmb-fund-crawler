@@ -33,6 +33,9 @@ func readGlobalFlag(t *RootT) {
 
 func Run() {
 	defer func() {
+		if p := recover(); p != nil {
+			log.Warnf("panic happened %s\n", p)
+		}
 		if err := db.GetDatabaseInstance().Close(); err != nil {
 			log.Errorf("cannot close database due to %s\n", err)
 		} else {

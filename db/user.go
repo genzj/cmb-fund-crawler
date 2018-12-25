@@ -5,10 +5,12 @@ import (
 	"time"
 
 	"github.com/dgraph-io/badger"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type userInfo struct {
-	Name string
+	Name     string
+	Password string
 }
 
 type userFunds struct {
@@ -26,7 +28,7 @@ const (
 	userFundsKey = "u:%s:fund"
 )
 
-func CreateUser(db *badger.DB, username string) error {
+func CreateUser(db *badger.DB, username string, password string) error {
 	key := fmt.Sprintf(userInfoKey, username)
 	err := db.Update(func(txn *badger.Txn) error {
 		if _, err := txn.Get([]byte(key)); err == nil {
@@ -35,7 +37,11 @@ func CreateUser(db *badger.DB, username string) error {
 			return err
 		}
 
-		return SaveJSONObject(txn, key, &userInfo{Name: username})
+		if hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), 10); err != nil {
+			return err
+		} else {
+			return SaveJSONObject(txn, key, &userInfo{Name: username, Password: string(hashedPassword)})
+		}
 	})
 	return err
 }
