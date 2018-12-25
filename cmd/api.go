@@ -7,7 +7,7 @@ import (
 
 // crawl command
 type apiT struct {
-	cli.Helper
+	RootT
 }
 
 var apiCmd = &cli.Command{
@@ -15,6 +15,7 @@ var apiCmd = &cli.Command{
 	Desc: "run api server",
 	Argv: func() interface{} { return new(apiT) },
 	Fn: func(ctx *cli.Context) error {
+		readGlobalFlag(&ctx.Argv().(*apiT).RootT)
 		api.StartAPIServer()
 		return nil
 	},

@@ -1,10 +1,9 @@
 package crawl
 
 import (
-	"log"
-
 	"github.com/andybalholm/cascadia"
 	"github.com/genzj/cmb-fund-crawler/util"
+	"github.com/labstack/gommon/log"
 	"github.com/levigross/grequests"
 	"golang.org/x/net/html"
 )
@@ -49,19 +48,20 @@ func (c CmbFundCrawl) Crawl(id string) (*FundDetail, error) {
 	})
 
 	if err != nil {
-		log.Printf("ERROR Unable to make request: %s\n", err)
+		log.Errorf("Unable to make request: %s\n", err)
 		return nil, err
 	}
 
 	if !resp.Ok {
-		log.Printf("ERROR HTTP request failed: %s\n", resp.StatusCode)
+		log.Errorf("HTTP request failed: %s\n", resp.StatusCode)
 		return nil, err
 	}
 
-	defer resp.Close()
+	defer func() { _ = resp.Close() }()
+
 	doc, err := html.Parse(resp.RawResponse.Body)
 	if err != nil {
-		log.Printf("ERROR Unable to parse HTML document: %s\n", err)
+		log.Errorf("Unable to parse HTML document: %s\n", err)
 	}
 
 	name := nameSelector.MatchFirst(doc)
@@ -74,17 +74,17 @@ func (c CmbFundCrawl) Crawl(id string) (*FundDetail, error) {
 	if !util.All(func(i interface{}) bool {
 		d, ok := i.(*html.Node)
 		if !ok {
-			log.Println("DEBUG type mismatch")
+			log.Warnf("type mismatch")
 			return false
 		}
 		if d == nil {
-			log.Println("DEBUG nil node")
+			log.Warnf("nil node")
 			return false
 		}
 		return true
 	}, name, netValue, cumulativeNetValue, changePCT, returnOneDay, updateTime) {
-		log.Printf("ERROR not all selector match content\n")
-		log.Printf("DEBUG %v, %v, %v, %v, %v, %v\n", name, netValue, cumulativeNetValue, changePCT, returnOneDay, updateTime)
+		log.Errorf("not all selector match content\n")
+		log.Debugf("%v, %v, %v, %v, %v, %v\n", name, netValue, cumulativeNetValue, changePCT, returnOneDay, updateTime)
 
 		return nil, nil
 	}
@@ -94,7 +94,7 @@ func (c CmbFundCrawl) Crawl(id string) (*FundDetail, error) {
 		changePCT.FirstChild.Data, returnOneDay.FirstChild.Data, updateTime.FirstChild.Data,
 	)
 
-	log.Printf("DEBUG crawled fund detail: %v", ans)
+	log.Infof("crawled fund detail: %v", ans)
 
 	return ans, nil
 }

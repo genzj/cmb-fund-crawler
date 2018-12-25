@@ -10,7 +10,7 @@ import (
 
 // crawl command
 type userT struct {
-	cli.Helper
+	RootT
 	Username string `cli:"*username,u" usage:"username to manipulated (required)"`
 	Add      bool   `cli:"add,a" usage:"add the specified user"`
 	Show     bool   `cli:"show,s" usage:"show user information"`
@@ -22,6 +22,8 @@ var userCmd = &cli.Command{
 	Argv: func() interface{} { return new(userT) },
 	Fn: func(ctx *cli.Context) error {
 		arg := (ctx.Argv()).(*userT)
+		readGlobalFlag(&arg.RootT)
+
 		fmt.Printf("username %s\n", arg.Username)
 		db := db2.GetDatabaseInstance()
 

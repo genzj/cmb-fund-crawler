@@ -2,7 +2,7 @@ package db
 
 import (
 	"encoding/json"
-	"log"
+	"github.com/labstack/gommon/log"
 	"sync"
 
 	"github.com/dgraph-io/badger"
@@ -31,6 +31,7 @@ func GetDatabaseInstance() *badger.DB {
 }
 
 func SaveJSONObject(txn *badger.Txn, key string, obj interface{}) error {
+	log.Debugf("save %v to %s", obj, key)
 	value, err := json.Marshal(obj)
 	if err != nil {
 		return err
@@ -47,7 +48,10 @@ func LoadJSONObject(txn *badger.Txn, key string, obj interface{}) error {
 	if err != nil {
 		return err
 	}
+	return LoadJSONFromItem(item, obj)
+}
 
+func LoadJSONFromItem(item *badger.Item, obj interface{}) error {
 	bs, err := item.Value()
 	if err != nil {
 		return err

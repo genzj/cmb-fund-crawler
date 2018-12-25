@@ -2,6 +2,8 @@ package db
 
 import (
 	"fmt"
+	"time"
+
 	"github.com/dgraph-io/badger"
 )
 
@@ -11,9 +13,11 @@ type userInfo struct {
 
 type userFunds struct {
 	Funds []struct {
-		ID      string
-		BidRate string
-		Amount  string
+		FundOrganization string
+		ID               string
+		BidRate          string
+		Amount           string
+		FirstBidDate     time.Time
 	}
 }
 
